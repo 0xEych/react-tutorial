@@ -6,33 +6,37 @@ import { BoardProps, SquareProps, Squares, State } from "./types";
 const Square: VFC<SquareProps> = (props) => {
   return (
     <button className="square" onClick={props.onClick}>
-      {props.value}
+      {props.square}
     </button>
   );
 };
 
 const Board: VFC<BoardProps> = (props) => {
   const renderSquare = (i: number) => {
-    return <Square value={props.squares[i]} onClick={() => props.onClick(i)} />;
+    return (
+      <Square
+        square={props.squares[i]}
+        onClick={() => props.onClick(i)}
+        key={i}
+      />
+    );
   };
 
   return (
     <div>
-      <div className="board-row">
-        {renderSquare(0)}
-        {renderSquare(1)}
-        {renderSquare(2)}
-      </div>
-      <div className="board-row">
-        {renderSquare(3)}
-        {renderSquare(4)}
-        {renderSquare(5)}
-      </div>
-      <div className="board-row">
-        {renderSquare(6)}
-        {renderSquare(7)}
-        {renderSquare(8)}
-      </div>
+      {Array(3)
+        .fill(0)
+        .map((val, i) => {
+          return (
+            <div className="board-row" key={i}>
+              {Array(3)
+                .fill(0)
+                .map((val2, j) => {
+                  return renderSquare(i * 3 + j);
+                })}
+            </div>
+          );
+        })}
     </div>
   );
 };
@@ -42,6 +46,7 @@ const Game: VFC = () => {
     history: [
       {
         squares: [0, 1, 2, 3, 4, 5, 6, 7, 8],
+        changed: 0,
       },
     ],
     stepNumber: 0,
@@ -54,7 +59,15 @@ const Game: VFC = () => {
   const squares = current.squares.slice();
   const winner = calculateWinner(current.squares);
   const moves = history.map((step, move) => {
-    const desc = move ? "Go to move #" + move : "Go to move start";
+    const desc = move
+      ? "Go to move #" +
+        move +
+        " (col" +
+        ((step.changed % 3) + 1) +
+        ", row" +
+        Math.ceil((step.changed + 1) / 3) +
+        ")"
+      : "Go to move start";
     return (
       <li key={move}>
         <button onClick={() => jumpTo(move)}>{desc}</button>
@@ -80,6 +93,7 @@ const Game: VFC = () => {
       history: history.concat([
         {
           squares: squares,
+          changed: i,
         },
       ]),
       stepNumber: history.length,

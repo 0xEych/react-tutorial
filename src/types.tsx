@@ -1,5 +1,5 @@
 export type State = {
-  history: { squares: Squares }[];
+  history: { squares: Squares; changed: number }[];
   stepNumber: number;
   xIsNext: boolean;
 };
@@ -7,7 +7,7 @@ export type State = {
 export type Squares = number[] | string[];
 
 export type SquareProps = {
-  value: number | string;
+  square: number | string;
   onClick: () => void;
 };
 
