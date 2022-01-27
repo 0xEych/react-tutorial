@@ -1,10 +1,9 @@
 import { useState, VFC } from "react";
 import ReactDOM from "react-dom";
 import "./index.css";
+import { BoardProps, SquareProps, Squares, State } from "./types";
 
-const Square: VFC<{ value: number | string; onClick: () => void }> = (
-  props
-) => {
+const Square: VFC<SquareProps> = (props) => {
   return (
     <button className="square" onClick={props.onClick}>
       {props.value}
@@ -12,38 +11,13 @@ const Square: VFC<{ value: number | string; onClick: () => void }> = (
   );
 };
 
-const Board: VFC = () => {
-  const [squares, setSquares] = useState<number[] | string[]>([
-    0, 1, 2, 3, 4, 5, 6, 7, 8,
-  ]);
-  const [xIsNext, setXIsNext] = useState(true);
-  const squareList = squares.slice();
-
-  const handleClick = (i: number) => {
-    if (
-      calculateWinner(squareList) !== false ||
-      squareList[i] === "X" ||
-      squareList[i] === "O"
-    )
-      return;
-    squareList[i] = xIsNext ? "X" : "O";
-    setSquares(squareList);
-    setXIsNext(!xIsNext);
-  };
-
+const Board: VFC<BoardProps> = (props) => {
   const renderSquare = (i: number) => {
-    return <Square value={squares[i]} onClick={() => handleClick(i)} />;
+    return <Square value={props.squares[i]} onClick={() => props.onClick(i)} />;
   };
-
-  const winner = calculateWinner(squareList);
-  const status =
-    winner !== false
-      ? "Winner: " + winner
-      : "Next player: " + (xIsNext ? "X" : "O");
 
   return (
     <div>
-      <div className="status">{status}</div>
       <div className="board-row">
         {renderSquare(0)}
         {renderSquare(1)}
@@ -64,20 +38,77 @@ const Board: VFC = () => {
 };
 
 const Game: VFC = () => {
+  const initialState: State = {
+    history: [
+      {
+        squares: [0, 1, 2, 3, 4, 5, 6, 7, 8],
+      },
+    ],
+    stepNumber: 0,
+    xIsNext: true,
+  };
+  const [state, setState] = useState(initialState);
+
+  const history = state.history.slice(0, state.stepNumber + 1);
+  const current = history[state.stepNumber];
+  const squares = current.squares.slice();
+  const winner = calculateWinner(current.squares);
+  const moves = history.map((step, move) => {
+    const desc = move ? "Go to move #" + move : "Go to move start";
+    return (
+      <li key={move}>
+        <button onClick={() => jumpTo(move)}>{desc}</button>
+      </li>
+    );
+  });
+  const status =
+    winner !== false
+      ? "Winner: " + winner
+      : "Next player: " + (state.xIsNext ? "X" : "O");
+
+  const handleClick = (i: number) => {
+    // ゲームセットショートreturn
+    if (
+      calculateWinner(squares) !== false ||
+      squares[i] === "X" ||
+      squares[i] === "O"
+    )
+      return;
+
+    squares[i] = state.xIsNext ? "X" : "O";
+    setState({
+      history: history.concat([
+        {
+          squares: squares,
+        },
+      ]),
+      stepNumber: history.length,
+      xIsNext: !state.xIsNext,
+    });
+  };
+
+  const jumpTo = (step: number) => {
+    setState({
+      history: state.history,
+      stepNumber: step,
+      xIsNext: step % 2 === 0,
+    });
+  };
+
   return (
     <div className="game">
       <div className="game-board">
-        <Board />
+        <Board squares={current.squares} onClick={(i) => handleClick(i)} />
       </div>
       <div className="game-info">
-        <div>{/* status */}</div>
-        <ol>{/* TODO */}</ol>
+        <div>{status}</div>
+        <ol>{moves}</ol>
       </div>
     </div>
   );
 };
 
-const calculateWinner = (squareList: number[] | string[]) => {
+const calculateWinner = (squares: Squares) => {
   const lines = [
     [0, 1, 2],
     [3, 4, 5],
@@ -90,12 +121,8 @@ const calculateWinner = (squareList: number[] | string[]) => {
   ];
   for (let i = 0; i < lines.length; i++) {
     const [a, b, c] = lines[i];
-    if (
-      squareList[a] &&
-      squareList[a] === squareList[b] &&
-      squareList[a] === squareList[c]
-    ) {
-      return squareList[a];
+    if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
+      return squares[a];
     }
   }
   return false;
