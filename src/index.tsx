@@ -16,18 +16,30 @@ const Board: VFC = () => {
   const [squares, setSquares] = useState<number[] | string[]>([
     0, 1, 2, 3, 4, 5, 6, 7, 8,
   ]);
+  const [xIsNext, setXIsNext] = useState(true);
+  const squareList = squares.slice();
 
   const handleClick = (i: number) => {
-    squares[i] = "X";
-    const square = squares.slice();
-    setSquares(square);
+    if (
+      calculateWinner(squareList) !== false ||
+      squareList[i] === "X" ||
+      squareList[i] === "O"
+    )
+      return;
+    squareList[i] = xIsNext ? "X" : "O";
+    setSquares(squareList);
+    setXIsNext(!xIsNext);
   };
 
   const renderSquare = (i: number) => {
     return <Square value={squares[i]} onClick={() => handleClick(i)} />;
   };
 
-  const status = "Next player: X";
+  const winner = calculateWinner(squareList);
+  const status =
+    winner !== false
+      ? "Winner: " + winner
+      : "Next player: " + (xIsNext ? "X" : "O");
 
   return (
     <div>
@@ -65,6 +77,29 @@ const Game: VFC = () => {
   );
 };
 
+const calculateWinner = (squareList: number[] | string[]) => {
+  const lines = [
+    [0, 1, 2],
+    [3, 4, 5],
+    [6, 7, 8],
+    [0, 3, 6],
+    [1, 4, 7],
+    [2, 5, 8],
+    [0, 4, 8],
+    [2, 4, 6],
+  ];
+  for (let i = 0; i < lines.length; i++) {
+    const [a, b, c] = lines[i];
+    if (
+      squareList[a] &&
+      squareList[a] === squareList[b] &&
+      squareList[a] === squareList[c]
+    ) {
+      return squareList[a];
+    }
+  }
+  return false;
+};
 // ========================================
 
 ReactDOM.render(<Game />, document.getElementById("root"));
