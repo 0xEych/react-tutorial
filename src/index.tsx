@@ -65,7 +65,7 @@ const Game: VFC = () => {
   const current = history[state.stepNumber];
   const squares = current.squares.slice();
   const winner = calculateWinner(current.squares);
-  console.log(winner);
+  console.log(squares);
 
   const moves = history.map((step, move) => {
     const desc = move
@@ -83,8 +83,12 @@ const Game: VFC = () => {
       </li>
     );
   });
+  console.log(moves.length);
+
   const status =
-    winner !== false
+    moves.length === 10 && winner === false
+      ? "DRAW"
+      : winner !== false
       ? "Winner: " + winner.winner
       : "Next player: " + (state.xIsNext ? "X" : "O");
 
