@@ -54,6 +54,8 @@ const Game: VFC = () => {
   };
   const [state, setState] = useState(initialState);
 
+  const [movesSort, setMovesSort] = useState(false);
+
   const history = state.history.slice(0, state.stepNumber + 1);
   const current = history[state.stepNumber];
   const squares = current.squares.slice();
@@ -116,7 +118,12 @@ const Game: VFC = () => {
       </div>
       <div className="game-info">
         <div>{status}</div>
-        <ol>{moves}</ol>
+        <button onClick={() => setMovesSort(!movesSort)}>
+          Sort: {movesSort ? "▼" : "▲"}
+        </button>
+        <ol style={{ flexDirection: movesSort ? "column" : "column-reverse" }}>
+          {moves}
+        </ol>
       </div>
     </div>
   );

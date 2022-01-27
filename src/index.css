@@ -6,7 +6,10 @@ body {
 ol, ul {
   padding-left: 30px;
 }
-
+ol{
+  display: flex;
+  flex-direction: column;
+}
 .board-row:after {
   clear: both;
   content: "";
