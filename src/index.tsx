@@ -1,27 +1,40 @@
 import { useState, VFC } from "react";
 import ReactDOM from "react-dom";
 import "./index.css";
-import { BoardProps, SquareProps, Squares, State } from "./types";
 
-const Square: VFC<SquareProps> = (props) => {
+type SquareType = number | string;
+
+type SquareProps = {
+  onClick: () => void;
+  isWin: boolean;
+  square: SquareType;
+};
+
+const Square: VFC<SquareProps> = ({ onClick, isWin, square }) => {
   return (
     <button
       className="square"
-      onClick={props.onClick}
-      style={{ backgroundColor: props.isWin ? "yellow" : "inherit" }}
+      onClick={onClick}
+      style={{ backgroundColor: isWin ? "yellow" : "inherit" }}
     >
-      {props.square}
+      {square}
     </button>
   );
 };
 
-const Board: VFC<BoardProps> = (props) => {
+export type BoardProps = {
+  squares: SquareType[];
+  winLine: number[];
+  onClick: (i: number) => void;
+};
+
+const Board: VFC<BoardProps> = ({ squares, winLine, onClick }) => {
   const renderSquare = (i: number) => {
     return (
       <Square
-        square={props.squares[i]}
-        isWin={props.winLine.includes(i)}
-        onClick={() => props.onClick(i)}
+        square={squares[i]}
+        isWin={winLine.includes(i)}
+        onClick={() => onClick(i)}
         key={i}
       />
     );
@@ -46,6 +59,12 @@ const Board: VFC<BoardProps> = (props) => {
   );
 };
 
+type State = {
+  history: { squares: SquareType[]; changed: number }[];
+  stepNumber: number;
+  xIsNext: boolean;
+};
+
 const Game: VFC = () => {
   const initialState: State = {
     history: [
@@ -65,7 +84,7 @@ const Game: VFC = () => {
   const current = history[state.stepNumber];
   const squares = current.squares.slice();
   const winner = calculateWinner(current.squares);
-  console.log(squares);
+  // console.log(squares);
 
   const moves = history.map((step, move) => {
     const desc = move
@@ -83,7 +102,7 @@ const Game: VFC = () => {
       </li>
     );
   });
-  console.log(moves.length);
+  // console.log(moves.length);
 
   const status =
     moves.length === 10 && winner === false
@@ -115,11 +134,12 @@ const Game: VFC = () => {
   };
 
   const jumpTo = (step: number) => {
-    setState({
-      history: state.history,
+    setState((prev) => ({
+      // history: state.history,
+      ...prev,
       stepNumber: step,
       xIsNext: step % 2 === 0,
-    });
+    }));
   };
 
   return (
@@ -144,7 +164,7 @@ const Game: VFC = () => {
   );
 };
 
-const calculateWinner = (squares: Squares) => {
+const calculateWinner = (squares: SquareType[]) => {
   const lines = [
     [0, 1, 2],
     [3, 4, 5],
